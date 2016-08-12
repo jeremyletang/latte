@@ -12,6 +12,7 @@ use std::error::Error;
 
 pub struct SlackTokenMid;
 
+#[derive(Clone)]
 pub struct SlackInfo {
     pub token: String,
     pub user_id: String,

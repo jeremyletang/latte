@@ -5,30 +5,31 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use api::Context;
 use backit::responses;
 use iron::{Request, Response, IronResult};
 
 // get /api/v1/message/:id
-pub fn get(_: &mut Request) -> IronResult<Response> {
+pub fn get(_: Context, _: &mut Request) -> IronResult<Response> {
     responses::ok("yolo")
 }
 
 // get /api/v1/messages
-pub fn list(_: &mut Request) -> IronResult<Response> {
+pub fn list(_: Context, _: &mut Request) -> IronResult<Response> {
     responses::ok("yolo")
 }
 
 // post /api/v1/message
-pub fn create(_: &mut Request) -> IronResult<Response> {
+pub fn create(_: Context, _: &mut Request) -> IronResult<Response> {
     responses::ok("yolo")
 }
 
 // put /api/v1/message
-pub fn update(_: &mut Request) -> IronResult<Response> {
+pub fn update(_: Context, _: &mut Request) -> IronResult<Response> {
     responses::ok("yolo")
 }
 
 // delete /api/v1/message
-pub fn delete(_: &mut Request) -> IronResult<Response> {
+pub fn delete(_: Context, _: &mut Request) -> IronResult<Response> {
     responses::ok("yolo")
 }
