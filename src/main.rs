@@ -22,6 +22,7 @@ use iron::{Chain, Iron};
 use std::env;
 
 mod api;
+mod mid;
 
 fn main() {
     let addr = env::var("LATTE_ADDR")
@@ -31,6 +32,7 @@ fn main() {
 
     let mut chain = Chain::new(api::init());
     chain.link_before(backit::middlewares::MetricsMid);
+    chain.link_before(mid::SlackTokenMid);
     chain.link_after(backit::middlewares::CorsMid);
     chain.link_after(backit::middlewares::MetricsMid);
     let _ = Iron::new(chain).http(&*addr).unwrap();

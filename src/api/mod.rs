@@ -7,9 +7,14 @@
 
 use backit::responses;
 use iron::{Request, Response, IronResult};
+use mid::{SlackInfo, SlackTokenMid};
 use router::Router;
 
 mod msg;
+
+pub struct Context {
+    pub infos: SlackInfo,
+}
 
 pub fn not_found(_: &mut Request) -> IronResult<Response> {
     responses::not_found("url not found on this server")
