@@ -33,6 +33,7 @@ use std::env;
 mod api;
 mod db;
 mod mid;
+mod slack;
 
 fn main() {
     let _ = env_logger::init();
