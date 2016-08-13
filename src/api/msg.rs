@@ -5,7 +5,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use api::Context;
+use api::context::Context;
 use backit::{responses, json};
 use db::models::Message;
 use diesel::{self, LoadDsl, ExecuteDsl, FilterDsl, ExpressionMethods};
@@ -40,7 +40,7 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
     if results.len() == 0 {
         responses::bad_request("id do not exist in database")
     } else {
-        responses::ok(serde_json::to_string(&results[0]).unwrap())        
+        responses::ok(serde_json::to_string(&results[0]).unwrap())
     }
 }
 
