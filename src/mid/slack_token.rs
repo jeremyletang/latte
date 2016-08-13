@@ -8,7 +8,6 @@
 use backit::json::Error as JsonError;
 use iron::{BeforeMiddleware, Request, IronResult, typemap};
 use iron::error::IronError;
-use std::error::Error;
 
 pub struct SlackTokenMid;
 
@@ -36,7 +35,7 @@ impl BeforeMiddleware for SlackTokenMid {
                 }
                 let token = match String::from_utf8(h[0].clone()) {
                     Ok(t) => t,
-                    Err(e) => {
+                    Err(_) => {
                         let err = JsonError::bad_request("invalid X-Slack-Token");
                         return Err(IronError::new(err.clone(), (err.status(), err.as_json())));
                     }

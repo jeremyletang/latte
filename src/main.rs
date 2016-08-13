@@ -5,8 +5,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+#![feature(custom_derive, custom_attribute, plugin)]
+#![plugin(diesel_codegen, dotenv_macros, log)]
+#![allow(unused_attributes)]
+
 extern crate backit;
 extern crate dotenv;
+#[macro_use]
+extern crate diesel;
 extern crate env_logger;
 extern crate iron;
 #[macro_use]
@@ -22,6 +28,7 @@ use iron::{Chain, Iron};
 use std::env;
 
 mod api;
+mod db;
 mod mid;
 
 fn main() {
