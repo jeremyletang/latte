@@ -1,7 +1,7 @@
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
+  created_at INTEGER DEFAULT CURRENT_TIMESTAMP,
+  updated_at INTEGER DEFAULT CURRENT_TIMESTAMP,
 
   token_id TEXT NOT NULL,
   slack_user_id TEXT NOT NULL

@@ -11,8 +11,8 @@ use super::schemas::*;
 #[insertable_into(users)]
 pub struct User {
     pub id: Option<String>,
-    pub created_at: i32,
-    pub updated_at: i32,
+    pub created_at: Option<i32>,
+    pub updated_at: Option<i32>,
 
     pub slack_user_id: String,
     pub token_id: String,
@@ -22,11 +22,12 @@ pub struct User {
 #[insertable_into(messages)]
 pub struct Message {
     pub id: Option<String>,
-    pub created_at: i32,
-    pub updated_at: i32,
+    pub created_at: Option<i32>,
+    pub updated_at: Option<i32>,
 
-    pub user_id: String,
+    pub user_id: Option<String>,
     pub body: String,
+    pub channel: String,
     pub at: i32,
     pub weekdays: String,
     pub repeated: i32,

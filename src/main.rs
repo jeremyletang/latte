@@ -6,7 +6,7 @@
 // except according to those terms.
 
 #![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(diesel_codegen, dotenv_macros, log)]
+#![plugin(diesel_codegen, serde_macros, dotenv_macros, log)]
 #![allow(unused_attributes)]
 
 extern crate backit;
@@ -19,10 +19,13 @@ extern crate iron;
 extern crate log;
 #[macro_use]
 extern crate router;
+extern crate r2d2;
+extern crate r2d2_diesel;
 extern crate serde;
 extern crate serde_json;
 extern crate time;
 extern crate unicase;
+extern crate uuid;
 
 use iron::{Chain, Iron};
 use std::env;
@@ -32,14 +35,16 @@ mod db;
 mod mid;
 
 fn main() {
+    let _ = env_logger::init();
     let addr = env::var("LATTE_ADDR")
         .expect("cannot init latte api (missing environnement var LATTE_ADDR)");
-    let db = env::var("LATTE_DB_ADDR")
+    let db_addr = env::var("LATTE_DB_ADDR")
         .expect("cannot init latte api (missing environnement var LATTE_DB_ADDR)");
 
     let mut chain = Chain::new(api::init());
     chain.link_before(backit::middlewares::MetricsMid);
     chain.link_before(mid::SlackTokenMid);
+    chain.link_before(backit::middlewares::SqliteConnectionMid::new(db_addr));
     chain.link_after(backit::middlewares::CorsMid);
     chain.link_after(backit::middlewares::MetricsMid);
     let _ = Iron::new(chain).http(&*addr).unwrap();
