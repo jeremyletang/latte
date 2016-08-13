@@ -8,7 +8,7 @@
 use api::context::Context;
 use backit::{responses, json};
 use db::models::Message;
-use diesel::{self, LoadDsl, ExecuteDsl, FilterDsl, ExpressionMethods};
+use diesel::{self, LoadDsl, ExecuteDsl, FilterDsl, ExpressionMethods, SaveChangesDsl};
 use iron::{Request, Response, IronResult};
 use router::Router;
 use serde_json;
@@ -80,11 +80,30 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
 }
 
 // put /api/v1/message
-pub fn update(_: Context, _: &mut Request) -> IronResult<Response> {
-    responses::ok("yolo")
+pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
+    let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
+
+    let mut m: Message = match json::from_body(&mut req.body) {
+        Ok(g) => g,
+        Err(e) => return Ok(Response::with((e.status(), e.as_json()))),
+    };
+    m.updated_at = Some(timestamp());
+
+    // id is mandatory
+    if m.id.is_none() {
+        responses::bad_request("id field is mandatory")
+    } else {
+        match m.save_changes::<Message>(db) {
+            Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
+            Err(e) => responses::internal_error(e.description()),
+        }
+    }
+
 }
 
 // delete /api/v1/message
 pub fn delete(_: Context, _: &mut Request) -> IronResult<Response> {
     responses::ok("yolo")
+    // let num_deleted = diesel::delete(posts.filter(title.like(pattern)))
+        // .execute(&connection)
 }
