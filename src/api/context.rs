@@ -16,7 +16,7 @@ use std::sync::Arc;
 
 
 pub struct Context {
-    pub infos: User,
+    pub user: User,
     pub db: Arc<r2d2::Pool<ConnectionManager<SqliteConnection>>>,
 }
 
@@ -27,7 +27,7 @@ pub fn make_context_from_request(req: &mut Request) -> Context {
         .expect("cannot get SlackTokenMid from iron extensions");
 
     Context {
-        infos: (*si).clone(),
+        user: (*si).clone(),
         db: db,
     }
 }

@@ -7,7 +7,7 @@
 
 use backit::{json, time};
 use db::models::User;
-use diesel::{self, LoadDsl, ExecuteDsl, SaveChangesDsl, FindDsl, FilterDsl, ExpressionMethods};
+use diesel::{self, LoadDsl, ExecuteDsl, SaveChangesDsl, FilterDsl, ExpressionMethods};
 use std::error::Error;
 use uuid::Uuid;
 use diesel::sqlite::SqliteConnection;
@@ -37,11 +37,11 @@ pub fn update(db: &mut SqliteConnection, mut u: User) -> Result<User, json::Erro
     }
 }
 
-pub fn get(db: &mut SqliteConnection, id: &str) -> Option<User> {
-    use db::schemas::users::dsl::users;
+pub fn get(db: &mut SqliteConnection, get_id: &str) -> Option<User> {
+    use db::schemas::users::dsl::{users, id};
 
     // search user with the provided id.
-    let result: Result<User, _> = users.find(id).first(db);
+    let result: Result<User, _> = users.filter(id.eq(get_id)).first(db);
 
     // check if the request is executed with succes
     match result {
