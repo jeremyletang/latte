@@ -11,7 +11,7 @@ use router::Router;
 
 #[macro_use]
 pub mod context;
-pub mod msg;
+pub mod message;
 pub mod user;
 
 pub fn not_found(_: &mut Request) -> IronResult<Response> {
@@ -20,11 +20,11 @@ pub fn not_found(_: &mut Request) -> IronResult<Response> {
 
 pub fn init() -> Router {
     router!(
-        get "/api/v1/message/:id" => wrap_ctx!(msg::get),
-        get "/api/v1/messages" => wrap_ctx!(msg::list),
-        post "/api/v1/message" => wrap_ctx!(msg::create),
-        put "/api/v1/message" => wrap_ctx!(msg::update),
-        delete "/api/v1/message/:id" => wrap_ctx!(msg::delete),
+        get "/api/v1/message/:id" => wrap_ctx!(message::get),
+        get "/api/v1/messages" => wrap_ctx!(message::list),
+        post "/api/v1/message" => wrap_ctx!(message::create),
+        put "/api/v1/message" => wrap_ctx!(message::update),
+        delete "/api/v1/message/:id" => wrap_ctx!(message::delete),
 
         get "/api/v1/user/:id" => wrap_ctx!(user::get),
         get "/api/v1/users" => wrap_ctx!(user::list),
