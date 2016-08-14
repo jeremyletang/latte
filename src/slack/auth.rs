@@ -5,6 +5,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use backit::json;
+use hyper::Client;
+
 #[derive(Serialize, Deserialize, Debug, Display, Default, Clone)]
 pub struct AuthTest {
     /// response status
@@ -22,3 +25,24 @@ pub struct AuthTest {
 }
 
 const METHOD: &'static str = "auth.test";
+
+pub fn call(token: &str) -> Result<AuthTest, json::Error> {
+    let client = Client::new();
+    // make the url
+    let url = format!("{}{}?token={}", super::SLACK_BASE_URL, METHOD, token);
+    match client.get(&*url).send() {
+        Ok(mut r) => {
+            match json::from_body::<AuthTest, _>(&mut r) {
+                Ok(at) => Ok(at),
+                Err(e) => {
+                    let estr = format!("error authenticating with slack {}", e);
+                    Err(json::Error::internal_error(estr))
+                }
+            }
+        },
+        Err(e) => {
+            let estr = format!("error while calling slack api {}", e);
+            Err(json::Error::internal_error(&*estr))
+        }
+    }
+}

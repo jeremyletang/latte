@@ -6,19 +6,14 @@
 // except according to those terms.
 
 use api::context::Context;
-use backit::{responses, json};
+use backit::{responses, json, time};
 use db::models::Message;
 use diesel::{self, LoadDsl, ExecuteDsl, SaveChangesDsl, FindDsl, FilterDsl, ExpressionMethods};
 use iron::{Request, Response, IronResult};
 use router::Router;
 use serde_json;
 use std::error::Error;
-use time;
 use uuid::Uuid;
-
-fn timestamp () -> i32 {
-    time::get_time().sec as i32
-}
 
 // get /api/v1/message/:id
 pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
@@ -55,15 +50,12 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
     // get the message from the body
     // it must contains exlicitly ONE Message struct
-    let mut m: Message = match json::from_body(&mut req.body) {
-        Ok(g) => g,
-        Err(e) => return Ok(Response::with((e.status(), e.as_json()))),
-    };
+    let mut m = try_or_json_error!(json::from_body::<Message, _>(&mut req.body));
 
     // create some mandatory fields
     m.id = Some(Uuid::new_v4().to_string());
-    m.created_at = Some(timestamp());
-    m.updated_at = Some(timestamp());
+    m.created_at = Some(time::timestamp::now() as i32);
+    m.updated_at = Some(time::timestamp::now() as i32);
 
     // insert the value + check error
     match diesel::insert(&m).into(messages::table).execute(db) {
@@ -83,7 +75,7 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
     };
 
     // update time of the model
-    m.updated_at = Some(timestamp());
+    m.updated_at = Some(time::timestamp::now() as i32);
 
     match m.id {
         Some(_) => {

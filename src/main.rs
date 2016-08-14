@@ -9,11 +9,13 @@
 #![plugin(diesel_codegen, serde_macros, dotenv_macros, log)]
 #![allow(unused_attributes)]
 
+#[macro_use]
 extern crate backit;
 extern crate dotenv;
 #[macro_use]
 extern crate diesel;
 extern crate env_logger;
+extern crate hyper;
 extern crate iron;
 #[macro_use]
 extern crate log;
@@ -44,8 +46,8 @@ fn main() {
 
     let mut chain = Chain::new(api::init());
     chain.link_before(backit::middlewares::MetricsMid);
-    chain.link_before(mid::SlackTokenMid);
     chain.link_before(backit::middlewares::SqliteConnectionMid::new(db_addr));
+    chain.link_before(mid::SlackTokenMid);
     chain.link_after(backit::middlewares::CorsMid);
     chain.link_after(backit::middlewares::MetricsMid);
     let _ = Iron::new(chain).http(&*addr).unwrap();

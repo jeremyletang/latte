@@ -5,25 +5,19 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use backit::middlewares::SqliteConnectionMid;
+use backit::middlewares::extract_connection_from_request;
+use db::models::User;
 use diesel::sqlite::SqliteConnection;
 use iron::Request;
-use mid::{SlackInfo, SlackTokenMid};
+use mid::SlackTokenMid;
 use r2d2;
 use r2d2_diesel::ConnectionManager;
 use std::sync::Arc;
 
-pub struct Context {
-    pub infos: SlackInfo,
-    pub db: Arc<r2d2::Pool<ConnectionManager<SqliteConnection>>>,
-}
 
-pub fn extract_connection_from_request(req: &mut Request)
-                                       -> Arc<r2d2::Pool<ConnectionManager<SqliteConnection>>> {
-    let pool = req.extensions
-        .get::<SqliteConnectionMid>()
-        .expect("cannot get database connection pool from context");
-    pool.clone()
+pub struct Context {
+    pub infos: User,
+    pub db: Arc<r2d2::Pool<ConnectionManager<SqliteConnection>>>,
 }
 
 pub fn make_context_from_request(req: &mut Request) -> Context {

@@ -7,6 +7,7 @@
 
 use super::schemas::*;
 use diesel::ExpressionMethods;
+use std::convert::Into;
 
 #[derive(Display, Debug, Eq, PartialEq, Default, Clone, AsChangeset, Identifiable, Queryable, Serialize, Deserialize)]
 #[insertable_into(users)]
@@ -18,6 +19,19 @@ pub struct User {
 
     pub slack_user_id: String,
     pub token_id: String,
+}
+
+impl User {
+    pub fn from_slack_ids<S1, S2>(user_id: S1, token_id: S2) -> User
+        where S1: Into<String>, S2: Into<String> {
+        User {
+            id: None,
+            created_at: None,
+            updated_at: None,
+            slack_user_id: user_id.into(),
+            token_id: token_id.into(),
+        }
+    }
 }
 
 #[derive(Display, Debug, Eq, PartialEq, Default, Clone, AsChangeset, Identifiable, Queryable, Serialize, Deserialize)]

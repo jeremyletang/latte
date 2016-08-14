@@ -9,9 +9,10 @@ use backit::responses;
 use iron::{Request, Response, IronResult};
 use router::Router;
 
-mod msg;
 #[macro_use]
-mod context;
+pub mod context;
+pub mod msg;
+pub mod user;
 
 pub fn not_found(_: &mut Request) -> IronResult<Response> {
     responses::not_found("url not found on this server")
@@ -24,6 +25,9 @@ pub fn init() -> Router {
         post "/api/v1/message" => wrap_ctx!(msg::create),
         put "/api/v1/message" => wrap_ctx!(msg::update),
         delete "/api/v1/message/:id" => wrap_ctx!(msg::delete),
+
+        get "/api/v1/user/:id" => wrap_ctx!(user::get),
+        get "/api/v1/users" => wrap_ctx!(user::list),
 
         any "/" => not_found,
         any "/*" => not_found,

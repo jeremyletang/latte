@@ -5,5 +5,5 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-pub use self::slack_token::{SlackTokenMid, SlackInfo};
+pub use self::slack_token::SlackTokenMid;
 pub mod slack_token;
