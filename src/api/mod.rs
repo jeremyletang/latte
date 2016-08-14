@@ -23,7 +23,7 @@ pub fn init() -> Router {
         get "/api/v1/messages" => wrap_ctx!(msg::list),
         post "/api/v1/message" => wrap_ctx!(msg::create),
         put "/api/v1/message" => wrap_ctx!(msg::update),
-        delete "/api/v1/message" => wrap_ctx!(msg::delete),
+        delete "/api/v1/message/:id" => wrap_ctx!(msg::delete),
 
         any "/" => not_found,
         any "/*" => not_found,

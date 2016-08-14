@@ -8,7 +8,7 @@
 use api::context::Context;
 use backit::{responses, json};
 use db::models::Message;
-use diesel::{self, LoadDsl, ExecuteDsl, FilterDsl, ExpressionMethods, SaveChangesDsl};
+use diesel::{self, LoadDsl, ExecuteDsl, SaveChangesDsl, FindDsl, FilterDsl, ExpressionMethods};
 use iron::{Request, Response, IronResult};
 use router::Router;
 use serde_json;
@@ -22,25 +22,18 @@ fn timestamp () -> i32 {
 
 // get /api/v1/message/:id
 pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
-    use db::schemas::messages::dsl::*;
+    use db::schemas::messages::dsl::messages;
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
-    let get_id = req.extensions.get::<Router>()
+    let id = req.extensions.get::<Router>()
         .unwrap().find("id").unwrap().to_string();
 
-    // only load messages with the given id
-    let results = messages.filter(id.eq(get_id)).load::<Message>(db);
+    // search user with the provided id.
+    let result: Result<Message, _> = messages.find(id).first(db);
 
     // check if the request is executed with succes
-    let results = match results {
-        Ok(g) => g,
-        Err(e) => return responses::internal_error(e.description()),
-    };
-
-    // the request is successful, but we get an vec
-    if results.len() == 0 {
-        responses::bad_request("id do not exist in database")
-    } else {
-        responses::ok(serde_json::to_string(&results[0]).unwrap())
+    match result {
+        Ok(m) => responses::ok(serde_json::to_string(&m).unwrap()),
+        Err(e) => responses::bad_request(format!("id do not exist in database {}", e.description())),
     }
 }
 
@@ -49,12 +42,10 @@ pub fn list(ctx: Context, _: &mut Request) -> IronResult<Response> {
     use db::schemas::messages::dsl::*;
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
-    let results = match messages.load::<Message>(db) {
-        Ok(g) => g,
-        Err(e) => return responses::internal_error(e.description()),
-    };
-
-    responses::ok(serde_json::to_string(&results).unwrap())
+    match messages.load::<Message>(db) {
+        Ok(g) => responses::ok(serde_json::to_string(&g).unwrap()),
+        Err(e) => responses::internal_error(e.description()),
+    }
 }
 
 // post /api/v1/message
@@ -62,18 +53,20 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
     use db::schemas::messages;
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
+    // get the message from the body
+    // it must contains exlicitly ONE Message struct
     let mut m: Message = match json::from_body(&mut req.body) {
         Ok(g) => g,
         Err(e) => return Ok(Response::with((e.status(), e.as_json()))),
     };
+
+    // create some mandatory fields
     m.id = Some(Uuid::new_v4().to_string());
     m.created_at = Some(timestamp());
     m.updated_at = Some(timestamp());
-    let insert_m = diesel::insert(&m)
-        .into(messages::table)
-        .execute(db);
 
-    match insert_m {
+    // insert the value + check error
+    match diesel::insert(&m).into(messages::table).execute(db) {
         Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
         Err(e) => responses::internal_error(e.description()),
     }
@@ -83,27 +76,45 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
 pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
+    // one
     let mut m: Message = match json::from_body(&mut req.body) {
         Ok(g) => g,
         Err(e) => return Ok(Response::with((e.status(), e.as_json()))),
     };
+
+    // update time of the model
     m.updated_at = Some(timestamp());
 
-    // id is mandatory
-    if m.id.is_none() {
-        responses::bad_request("id field is mandatory")
-    } else {
-        match m.save_changes::<Message>(db) {
-            Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
-            Err(e) => responses::internal_error(e.description()),
-        }
+    match m.id {
+        Some(_) => {
+            match m.save_changes::<Message>(db) {
+                Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
+                Err(e) => responses::internal_error(e.description()),
+            }
+        },
+        None => responses::bad_request("id field is mandatory")
     }
-
 }
 
 // delete /api/v1/message
-pub fn delete(_: Context, _: &mut Request) -> IronResult<Response> {
-    responses::ok("yolo")
-    // let num_deleted = diesel::delete(posts.filter(title.like(pattern)))
-        // .execute(&connection)
+pub fn delete(ctx: Context, req: &mut Request) -> IronResult<Response> {
+    use db::schemas::messages::dsl::{messages, id};
+    let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
+    let delete_id = req.extensions.get::<Router>()
+        .unwrap().find("id").unwrap().to_string();
+
+    // first get the user
+    // search user with the provided id.
+    let result: Result<Message, _> = messages.find(delete_id.clone()).first(db);
+
+    // check if the user exist, delete it
+    match result {
+        Ok(m) => {
+            match diesel::delete(messages.filter(id.eq(delete_id))).execute(db) {
+                Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
+                Err(e) => responses::internal_error(e.description()),
+            }
+        },
+        Err(e) => responses::bad_request(format!("id do not exist in database {}", e.description())),
+    }
 }
