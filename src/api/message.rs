@@ -16,7 +16,24 @@ use std::error::Error;
 use uuid::Uuid;
 
 fn validate_hour(h: i32, m: i32) -> bool {
-    (h >= 0 && h <= 23) && (m >= 0 && m <= 59) 
+    (h >= 0 && h <= 23) && (m >= 0 && m <= 59)
+}
+
+fn validate_days(m: &Message) -> bool {
+    m.monday.is_some() || m.tuesday.is_some() || m.wednesday.is_some() || m.thursday.is_some()
+    || m.friday.is_some() || m.saturday.is_some() || m.sunday.is_some()
+}
+
+fn validate(m: &Message) -> Result<(), IronResult<Response>> {
+    if !validate_hour(m.hour, m.minute) {
+        return Err(responses::bad_request("invalid hour format, hour must be in the range 0-23, and minutes 0-59"));
+    }
+
+    if !validate_days(m) {
+        return Err(responses::bad_request("you need to specify at least one day to send the message"));
+    }
+
+    return Ok(());
 }
 
 // get /api/v1/message/:id
@@ -56,8 +73,9 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
     // it must contains exlicitly ONE Message struct
     let mut m = try_or_json_error!(json::from_body::<Message, _>(&mut req.body));
 
-    if !validate_hour(m.hour, m.minute) {
-        return responses::bad_request("invalid hour format, hour must be in the range 0-23, and minutes 0-59");
+    match validate(&m) {
+        Ok(_) => {},
+        Err(e) => return e,
     }
 
     // create some mandatory fields
@@ -80,8 +98,9 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
     // one match only
     let mut m = try_or_json_error!(json::from_body::<Message, _>(&mut req.body));
 
-    if !validate_hour(m.hour, m.minute) {
-        return responses::bad_request("invalid hour format, hour must be in the range 0-23, and minutes 0-59");
+    match validate(&m) {
+        Ok(_) => {},
+        Err(e) => return e,
     }
 
     // update time of the model
