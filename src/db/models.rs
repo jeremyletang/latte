@@ -45,7 +45,16 @@ pub struct Message {
     pub user_id: Option<String>,
     pub body: String,
     pub channel: String,
-    pub at: i32,
-    pub weekdays: String,
+
+    pub hour: i32,
+    pub minute: i32,
+
+    pub monday: Option<i32>,
+    pub tuesday: Option<i32>,
+    pub wednesday: Option<i32>,
+    pub thursday: Option<i32>,
+    pub friday: Option<i32>,
+    pub saturday: Option<i32>,
+    pub sunday: Option<i32>,
     pub repeated: i32,
 }

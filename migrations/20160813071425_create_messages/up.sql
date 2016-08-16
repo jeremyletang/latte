@@ -6,7 +6,16 @@ CREATE TABLE messages (
   user_id TEXT,
   body TEXT NOT NULL,
   channel TEXT NOT NULL,
-  at INTEGER NOT NULL,
-  weekdays TEXT NOT NULL,
+
+  hour INTEGER NOT NULL,
+  minute INTEGER NOT NULL,
+
+  monday INTEGER,
+  tuesday INTEGER,
+  wednesday INTEGER,
+  thursday INTEGER,
+  friday INTEGER,
+  saturday INTEGER,
+  sunday INTEGER,
   repeated INTEGER NOT NULL
 );
