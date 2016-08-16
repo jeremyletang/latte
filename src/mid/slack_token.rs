@@ -36,12 +36,12 @@ fn make_slack_info(db: &mut SqliteConnection, token: &str) -> Result<User, JsonE
                     match user::get(db, &*at.user_id) {
                         // we already know this user, just update the token
                         // then return
-                        Some(_) => {
+                        Ok(_) => {
                             u.token_id = token.to_string();
                             user::update(db, u)
                         },
                         // no user with this id, create it then return it
-                        None => user::create(db, u)
+                        Err(_) => user::create(db, u)
                     }
                 },
                 // here we cannot do anything else ...

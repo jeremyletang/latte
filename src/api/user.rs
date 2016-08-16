@@ -7,24 +7,19 @@
 
 use api::context::Context;
 use backit::responses;
-use db::models::User;
-use diesel::{FindDsl, LoadDsl};
+use db::user;
 use iron::{Request, Response, IronResult};
 use router::Router;
 use serde_json;
 use std::error::Error;
 
 pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
-    use db::schemas::users::dsl::users;
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
     let id = req.extensions.get::<Router>()
         .unwrap().find("id").unwrap().to_string();
 
-    // search user with the provided id.
-    let result: Result<User, _> = users.find(id).first(db);
-
     // check if the request is executed with succes
-    match result {
+    match user::get(db, &id) {
         Ok(u) => responses::ok(serde_json::to_string(&u).unwrap()),
         Err(e) => responses::bad_request(format!("id do not exist in database {}", e.description())),
     }
@@ -32,10 +27,9 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
 // get /api/v1/users
 pub fn list(ctx: Context, _: &mut Request) -> IronResult<Response> {
-    use db::schemas::users::dsl::*;
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
-    match users.load::<User>(db) {
+    match user::list(db) {
         Ok(g) => responses::ok(serde_json::to_string(&g).unwrap()),
         Err(e) => responses::internal_error(e.description()),
     }
