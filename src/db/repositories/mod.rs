@@ -5,6 +5,5 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-pub mod schemas;
-pub mod models;
-pub mod repositories;
+pub mod user;
+pub mod message;

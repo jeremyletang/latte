@@ -8,7 +8,7 @@
 use api::context::Context;
 use backit::{responses, json, time};
 use db::models::Message;
-use db::message;
+use db::repositories::message as message_repo;
 use iron::{Request, Response, IronResult};
 use router::Router;
 use serde_json;
@@ -43,7 +43,7 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
         .unwrap().find("id").unwrap().to_string();
 
     // check if the request is executed with succes
-    match message::get(db, &*id) {
+    match message_repo::get(db, &*id) {
         Ok(m) => {
             if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
                 return responses::bad_request("cannot get a message owned by another user");
@@ -58,7 +58,7 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
 pub fn list(ctx: Context, _: &mut Request) -> IronResult<Response> {
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
-    match message::list_for_slack_user(db, &*ctx.user.slack_user_id) {
+    match message_repo::list_for_slack_user(db, &*ctx.user.slack_user_id) {
         Ok(g) => responses::ok(serde_json::to_string(&g).unwrap()),
         Err(e) => responses::internal_error(e.description()),
     }
@@ -84,7 +84,7 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
     m.user_id = Some(ctx.user.slack_user_id.clone());
 
     // insert the value + check error
-    match message::create(db, &m) {
+    match message_repo::create(db, &m) {
         Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
         Err(e) => responses::internal_error(e.description()),
     }
@@ -107,7 +107,7 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
     match m.id {
         Some(ref id_to_update) => {
-            match message::get(db, &*id_to_update) {
+            match message_repo::get(db, &*id_to_update) {
                 Ok(old) => {
                     if ctx.user.slack_user_id != old.user_id.clone().unwrap() {
                         return responses::bad_request("cannot update a message owned by another user");
@@ -116,7 +116,7 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
                 Err(e) => return responses::bad_request(format!("message do not exist, {}", e.description())),
             }
 
-            match message::update(db, &m) {
+            match message_repo::update(db, &m) {
                 Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
                 Err(e) => responses::internal_error(e.description()),
             }
@@ -132,12 +132,12 @@ pub fn delete(ctx: Context, req: &mut Request) -> IronResult<Response> {
         .unwrap().find("id").unwrap().to_string();
 
     // check if the user exist, delete it
-    match message::get(db, &*delete_id) {
+    match message_repo::get(db, &*delete_id) {
         Ok(m) => {
             if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
                 return responses::bad_request("cannot delete a message owned by another user");
             }
-            match message::delete(db, &*delete_id) {
+            match message_repo::delete(db, &*delete_id) {
                 Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
                 Err(e) => responses::internal_error(e.description()),
             }

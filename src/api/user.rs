@@ -7,7 +7,7 @@
 
 use api::context::Context;
 use backit::responses;
-use db::user;
+use db::repositories::user as user_repo;
 use iron::{Request, Response, IronResult};
 use router::Router;
 use serde_json;
@@ -19,7 +19,7 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
         .unwrap().find("id").unwrap().to_string();
 
     // check if the request is executed with succes
-    match user::get(db, &id) {
+    match user_repo::get(db, &id) {
         Ok(u) => responses::ok(serde_json::to_string(&u).unwrap()),
         Err(e) => responses::bad_request(format!("id do not exist in database {}", e.description())),
     }
@@ -29,7 +29,7 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
 pub fn list(ctx: Context, _: &mut Request) -> IronResult<Response> {
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
-    match user::list(db) {
+    match user_repo::list(db) {
         Ok(g) => responses::ok(serde_json::to_string(&g).unwrap()),
         Err(e) => responses::internal_error(e.description()),
     }
