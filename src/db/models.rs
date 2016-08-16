@@ -17,8 +17,8 @@ pub struct User {
     pub created_at: Option<i32>,
     pub updated_at: Option<i32>,
 
-    pub slack_user_id: String,
     pub token_id: String,
+    pub slack_user_id: String,
 }
 
 impl User {
