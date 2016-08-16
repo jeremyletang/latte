@@ -37,12 +37,15 @@ mod db;
 mod mid;
 mod slack;
 
+const LATTE_ADDR: &'static str = "LATTE_ADDR";
+const LATTE_DATABASE_URL: &'static str = "LATTE_DATABASE_URL";
+
 fn main() {
     let _ = env_logger::init();
-    let addr = env::var("LATTE_ADDR")
-        .expect("cannot init latte api (missing environnement var LATTE_ADDR)");
-    let db_addr = env::var("LATTE_DATABASE_URL")
-        .expect("cannot init latte api (missing environnement var LATTE_DB_ADDR)");
+    let addr = env::var(LATTE_ADDR)
+        .expect(&*format!("cannot init latte api (missing environnement var {})", LATTE_ADDR));
+    let db_addr = env::var(LATTE_DATABASE_URL)
+        .expect(&*format!("cannot init latte api (missing environnement var {})", LATTE_DATABASE_URL));
 
     let mut chain = Chain::new(api::init());
     chain.link_before(backit::middlewares::MetricsMid);
