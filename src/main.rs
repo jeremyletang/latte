@@ -41,7 +41,7 @@ fn main() {
     let _ = env_logger::init();
     let addr = env::var("LATTE_ADDR")
         .expect("cannot init latte api (missing environnement var LATTE_ADDR)");
-    let db_addr = env::var("LATTE_DB_ADDR")
+    let db_addr = env::var("LATTE_DATABASE_URL")
         .expect("cannot init latte api (missing environnement var LATTE_DB_ADDR)");
 
     let mut chain = Chain::new(api::init());
