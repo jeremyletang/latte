@@ -36,6 +36,7 @@ mod api;
 mod db;
 mod mid;
 mod slack;
+mod notifier;
 
 const LATTE_ADDR: &'static str = "LATTE_ADDR";
 const LATTE_DATABASE_URL: &'static str = "LATTE_DATABASE_URL";
