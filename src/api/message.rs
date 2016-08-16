@@ -15,6 +15,10 @@ use serde_json;
 use std::error::Error;
 use uuid::Uuid;
 
+fn validate_hour(h: i32, m: i32) -> bool {
+    (h >= 0 && h <= 23) && (m >= 0 && m <= 59) 
+}
+
 // get /api/v1/message/:id
 pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
     use db::schemas::messages::dsl::messages;
@@ -52,6 +56,10 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
     // it must contains exlicitly ONE Message struct
     let mut m = try_or_json_error!(json::from_body::<Message, _>(&mut req.body));
 
+    if !validate_hour(m.hour, m.minute) {
+        return responses::bad_request("invalid hour format, hour must be in the range 0-23, and minutes 0-59");
+    }
+
     // create some mandatory fields
     m.id = Some(Uuid::new_v4().to_string());
     m.created_at = Some(time::timestamp::now() as i32);
@@ -71,6 +79,10 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
     // one match only
     let mut m = try_or_json_error!(json::from_body::<Message, _>(&mut req.body));
+
+    if !validate_hour(m.hour, m.minute) {
+        return responses::bad_request("invalid hour format, hour must be in the range 0-23, and minutes 0-59");
+    }
 
     // update time of the model
     m.updated_at = Some(time::timestamp::now() as i32);
