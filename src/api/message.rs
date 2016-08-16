@@ -9,7 +9,6 @@ use api::context::Context;
 use backit::{responses, json, time};
 use db::models::Message;
 use db::message;
-use diesel::{self, LoadDsl, ExecuteDsl, SaveChangesDsl, FindDsl, FilterDsl, ExpressionMethods};
 use iron::{Request, Response, IronResult};
 use router::Router;
 use serde_json;
@@ -39,16 +38,12 @@ fn validate(m: &Message) -> Result<(), IronResult<Response>> {
 
 // get /api/v1/message/:id
 pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
-    use db::schemas::messages::dsl::messages;
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
     let id = req.extensions.get::<Router>()
         .unwrap().find("id").unwrap().to_string();
 
-    // search user with the provided id.
-    let result: Result<Message, _> = messages.find(id).first(db);
-
     // check if the request is executed with succes
-    match result {
+    match message::get(db, &*id) {
         Ok(m) => {
             if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
                 return responses::bad_request("cannot get a message owned by another user");
@@ -61,10 +56,9 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
 // get /api/v1/messages
 pub fn list(ctx: Context, _: &mut Request) -> IronResult<Response> {
-    use db::schemas::messages::dsl::{messages, user_id};
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
-    match messages.filter(user_id.eq(ctx.user.slack_user_id.clone())).load::<Message>(db) {
+    match message::list_for_slack_user(db, &*ctx.user.slack_user_id) {
         Ok(g) => responses::ok(serde_json::to_string(&g).unwrap()),
         Err(e) => responses::internal_error(e.description()),
     }
@@ -72,7 +66,6 @@ pub fn list(ctx: Context, _: &mut Request) -> IronResult<Response> {
 
 // post /api/v1/message
 pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
-    use db::schemas::messages;
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
     // get the message from the body
@@ -91,7 +84,7 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
     m.user_id = Some(ctx.user.slack_user_id.clone());
 
     // insert the value + check error
-    match diesel::insert(&m).into(messages::table).execute(db) {
+    match message::create(db, &m) {
         Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
         Err(e) => responses::internal_error(e.description()),
     }
@@ -123,7 +116,7 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
                 Err(e) => return responses::bad_request(format!("message do not exist, {}", e.description())),
             }
 
-            match m.save_changes::<Message>(db) {
+            match message::update(db, &m) {
                 Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
                 Err(e) => responses::internal_error(e.description()),
             }
@@ -134,7 +127,6 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
 // delete /api/v1/message
 pub fn delete(ctx: Context, req: &mut Request) -> IronResult<Response> {
-    use db::schemas::messages::dsl::{messages, id};
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
     let delete_id = req.extensions.get::<Router>()
         .unwrap().find("id").unwrap().to_string();
@@ -145,7 +137,7 @@ pub fn delete(ctx: Context, req: &mut Request) -> IronResult<Response> {
             if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
                 return responses::bad_request("cannot delete a message owned by another user");
             }
-            match diesel::delete(messages.filter(id.eq(delete_id))).execute(db) {
+            match message::delete(db, &*delete_id) {
                 Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
                 Err(e) => responses::internal_error(e.description()),
             }
