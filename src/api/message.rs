@@ -8,6 +8,7 @@
 use api::context::Context;
 use backit::{responses, json, time};
 use db::models::Message;
+use db::message;
 use diesel::{self, LoadDsl, ExecuteDsl, SaveChangesDsl, FindDsl, FilterDsl, ExpressionMethods};
 use iron::{Request, Response, IronResult};
 use router::Router;
@@ -48,7 +49,12 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
     // check if the request is executed with succes
     match result {
-        Ok(m) => responses::ok(serde_json::to_string(&m).unwrap()),
+        Ok(m) => {
+            if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
+                return responses::bad_request("cannot get a message owned by another user");
+            }
+            responses::ok(serde_json::to_string(&m).unwrap())
+        },
         Err(e) => responses::bad_request(format!("id do not exist in database {}", e.description())),
     }
 }
@@ -107,7 +113,16 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
     m.updated_at = Some(time::timestamp::now() as i32);
 
     match m.id {
-        Some(_) => {
+        Some(ref id_to_update) => {
+            match message::get(db, &*id_to_update) {
+                Ok(old) => {
+                    if ctx.user.slack_user_id != old.user_id.clone().unwrap() {
+                        return responses::bad_request("cannot update a message owned by another user");
+                    }
+                },
+                Err(e) => return responses::bad_request(format!("message do not exist, {}", e.description())),
+            }
+
             match m.save_changes::<Message>(db) {
                 Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
                 Err(e) => responses::internal_error(e.description()),
@@ -124,13 +139,12 @@ pub fn delete(ctx: Context, req: &mut Request) -> IronResult<Response> {
     let delete_id = req.extensions.get::<Router>()
         .unwrap().find("id").unwrap().to_string();
 
-    // first get the user
-    // search user with the provided id.
-    let result: Result<Message, _> = messages.find(delete_id.clone()).first(db);
-
     // check if the user exist, delete it
-    match result {
+    match message::get(db, &*delete_id) {
         Ok(m) => {
+            if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
+                return responses::bad_request("cannot delete a message owned by another user");
+            }
             match diesel::delete(messages.filter(id.eq(delete_id))).execute(db) {
                 Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
                 Err(e) => responses::internal_error(e.description()),

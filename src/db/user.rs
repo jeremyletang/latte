@@ -46,7 +46,7 @@ pub fn get(db: &mut SqliteConnection, get_id: &str) -> Option<User> {
     // check if the request is executed with succes
     match result {
         Ok(u) => Some(u),
-        Err(e) => None,
+        Err(_) => None,
     }
 }
 
@@ -54,6 +54,6 @@ pub fn get_from_token(db: &mut SqliteConnection, token: &str) -> Option<User> {
     use db::schemas::users::dsl::{users, token_id};
     match users.filter(token_id.eq(token)).first(db) {
         Ok(u) => Some(u),
-        Err(e) => None,
+        Err(_) => None,
     }
 }
