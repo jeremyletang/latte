@@ -48,9 +48,13 @@ fn main() {
     let db_addr = env::var(LATTE_DATABASE_URL)
         .expect(&*format!("cannot init latte api (missing environnement var {})", LATTE_DATABASE_URL));
 
+    // create the cache
+    let cache = notifier::make_cache(&*db_addr);
+
     let mut chain = Chain::new(api::init());
     chain.link_before(backit::middlewares::MetricsMid);
     chain.link_before(backit::middlewares::SqliteConnectionMid::new(db_addr));
+    chain.link_before(mid::CacheMid::new(cache.clone()));
     chain.link_before(mid::SlackTokenMid);
     chain.link_after(backit::middlewares::CorsMid);
     chain.link_after(backit::middlewares::MetricsMid);

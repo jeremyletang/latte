@@ -29,7 +29,7 @@ const METHOD: &'static str = "auth.test";
 pub fn call(token: &str) -> Result<AuthTest, json::Error> {
     let client = Client::new();
     // make the url
-    let url = format!("{}{}?token={}", super::SLACK_BASE_URL, METHOD, token);
+    let url = format!("{}{}?token={}", ::slack::SLACK_BASE_URL, METHOD, token);
     match client.get(&*url).send() {
         Ok(mut r) => {
             match json::from_body::<AuthTest, _>(&mut r) {
