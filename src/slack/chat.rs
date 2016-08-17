@@ -29,7 +29,6 @@ mod post_message {
     }
 
     const METHOD: &'static str = "chat.postMessage";
-    // chat.postMessage\?token\=xoxs-3815959245-47261519462-68846856535-6efa9faee4\&channel\=U1D7PF9DL\&text\=yolo
 
     pub fn call(token: &str, channel: &str, text: &str) -> Result<ChatPostMessage, json::Error> {
         let client = Client::new();
