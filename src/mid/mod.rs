@@ -5,5 +5,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+pub use self::cache::{CacheMid, extract_cache_from_request};
 pub use self::slack_token::SlackTokenMid;
+
+pub mod cache;
 pub mod slack_token;
