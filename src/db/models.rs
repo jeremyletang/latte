@@ -46,8 +46,8 @@ pub struct Message {
     pub body: String,
     pub channel: String,
 
-    pub hour: i32,
-    pub minute: i32,
+    pub seconds: i32,
+    pub utc_offset: i32,
 
     pub monday: Option<i32>,
     pub tuesday: Option<i32>,

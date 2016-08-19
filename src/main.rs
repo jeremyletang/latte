@@ -11,6 +11,7 @@
 
 #[macro_use]
 extern crate backit;
+extern crate chrono;
 extern crate dotenv;
 #[macro_use]
 extern crate diesel;
