@@ -6,6 +6,7 @@
 // except according to those terms.
 
 use api::context::Context;
+use api::time_utils;
 use backit::{responses, json, time};
 use db::models::Message;
 use db::repositories::message as message_repo;
@@ -15,8 +16,10 @@ use serde_json;
 use std::error::Error;
 use uuid::Uuid;
 
-fn validate_hour(h: i32, m: i32) -> bool {
-    (h >= 0 && h <= 23) && (m >= 0 && m <= 59)
+const DAY_SECONDS: i32 = 86400;
+
+fn validate_hour(seconds: i32) -> bool {
+    (seconds > 0) && (seconds < DAY_SECONDS)
 }
 
 fn validate_days(m: &Message) -> bool {
@@ -25,7 +28,7 @@ fn validate_days(m: &Message) -> bool {
 }
 
 fn validate(m: &Message) -> Result<(), IronResult<Response>> {
-    if !validate_hour(m.hour, m.minute) {
+    if !validate_hour(m.seconds) {
         return Err(responses::bad_request("invalid hour format, hour must be in the range 0-23, and minutes 0-59"));
     }
 
@@ -44,10 +47,11 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
     // check if the request is executed with succes
     match message_repo::get(db, &*id) {
-        Ok(m) => {
+        Ok(mut m) => {
             if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
                 return responses::bad_request("cannot get a message owned by another user");
             }
+            m = time_utils::utc_message_to_local_message(m);
             responses::ok(serde_json::to_string(&m).unwrap())
         },
         Err(e) => responses::bad_request(format!("id do not exist in database {}", e.description())),
@@ -59,7 +63,11 @@ pub fn list(ctx: Context, _: &mut Request) -> IronResult<Response> {
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
     match message_repo::list_for_slack_user(db, &*ctx.user.slack_user_id) {
-        Ok(g) => responses::ok(serde_json::to_string(&g).unwrap()),
+        Ok(mut lm) => {
+            // convert back the message to the timezone of the user
+            lm = lm.into_iter().map(|m| time_utils::utc_message_to_local_message(m)).collect();
+            responses::ok(serde_json::to_string(&lm).unwrap())
+        },
         Err(e) => responses::internal_error(e.description()),
     }
 }
@@ -82,6 +90,8 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
     m.created_at = Some(time::timestamp::now() as i32);
     m.updated_at = Some(time::timestamp::now() as i32);
     m.user_id = Some(ctx.user.slack_user_id.clone());
+
+    m = time_utils::local_message_to_utc_message(m);
 
     // insert the value + check error
     match message_repo::create(db, &m) {

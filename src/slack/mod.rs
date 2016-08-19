@@ -6,5 +6,12 @@
 // except according to those terms.
 
 pub mod auth;
+pub mod chat;
 
 const SLACK_BASE_URL: &'static str = "https://slack.com/api/";
+
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SlackError {
+    pub ok: bool,
+    pub error: String,
+}

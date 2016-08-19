@@ -7,8 +7,8 @@ CREATE TABLE messages (
   body TEXT NOT NULL,
   channel TEXT NOT NULL,
 
-  hour INTEGER NOT NULL,
-  minute INTEGER NOT NULL,
+  seconds INTEGER NOT NULL,
+  utc_offset INTEGER NOT NULL,
 
   monday INTEGER,
   tuesday INTEGER,

@@ -9,18 +9,20 @@ use backit::middlewares::extract_connection_from_request;
 use db::models::User;
 use diesel::sqlite::SqliteConnection;
 use iron::Request;
-use mid::SlackTokenMid;
+use mid::{SlackTokenMid, CacheMid, extract_cache_from_request};
 use r2d2;
 use r2d2_diesel::ConnectionManager;
-use std::sync::Arc;
-
+use std::sync::{Arc, Mutex};
+use notifier::Cache;
 
 pub struct Context {
     pub user: User,
     pub db: Arc<r2d2::Pool<ConnectionManager<SqliteConnection>>>,
+    pub cache: Arc<Mutex<Cache>>,
 }
 
 pub fn make_context_from_request(req: &mut Request) -> Context {
+    let cache = extract_cache_from_request(req);
     let db = extract_connection_from_request(req);
     let si = req.extensions
         .get::<SlackTokenMid>()
@@ -29,6 +31,7 @@ pub fn make_context_from_request(req: &mut Request) -> Context {
     Context {
         user: (*si).clone(),
         db: db,
+        cache: cache,
     }
 }
 
