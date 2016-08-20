@@ -13,7 +13,7 @@ use router::Router;
 pub mod context;
 pub mod message;
 pub mod user;
-pub mod time_utils;
+// pub mod time_utils;
 
 pub fn not_found(_: &mut Request) -> IronResult<Response> {
     responses::not_found("url not found on this server")

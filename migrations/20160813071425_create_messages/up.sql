@@ -10,12 +10,6 @@ CREATE TABLE messages (
   seconds INTEGER NOT NULL,
   utc_offset INTEGER NOT NULL,
 
-  monday INTEGER,
-  tuesday INTEGER,
-  wednesday INTEGER,
-  thursday INTEGER,
-  friday INTEGER,
-  saturday INTEGER,
-  sunday INTEGER,
+  weekdays_id TEXT NOT NULL,
   repeated INTEGER NOT NULL
 );

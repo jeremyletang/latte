@@ -49,12 +49,23 @@ pub struct Message {
     pub seconds: i32,
     pub utc_offset: i32,
 
-    pub monday: Option<i32>,
-    pub tuesday: Option<i32>,
-    pub wednesday: Option<i32>,
-    pub thursday: Option<i32>,
-    pub friday: Option<i32>,
-    pub saturday: Option<i32>,
-    pub sunday: Option<i32>,
+    pub weekdays_id: String,
     pub repeated: i32,
+}
+
+#[derive(Display, Debug, Eq, PartialEq, Default, Clone, AsChangeset, Identifiable, Queryable, Serialize, Deserialize)]
+#[insertable_into(weekdays)]
+#[changeset_for(weekdays)]
+pub struct Weekday {
+    pub id: String,
+    pub created_at: Option<i32>,
+    pub updated_at: Option<i32>,
+
+    pub monday: bool,
+    pub tuesday: bool,
+    pub wednesday: bool,
+    pub thursday: bool,
+    pub friday: bool,
+    pub saturday: bool,
+    pub sunday: bool,
 }

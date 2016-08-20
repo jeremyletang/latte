@@ -56,7 +56,8 @@ fn main() {
     chain.link_before(backit::middlewares::MetricsMid);
     chain.link_before(backit::middlewares::SqliteConnectionMid::new(db_addr));
     chain.link_before(mid::CacheMid::new(cache.clone()));
-    chain.link_before(mid::SlackTokenMid);
+    chain.link_before(mid::FakeSlackTokenMid);
+    // chain.link_before(mid::SlackTokenMid);
     chain.link_after(backit::middlewares::CorsMid);
     chain.link_after(backit::middlewares::MetricsMid);
     let _ = Iron::new(chain).http(&*addr).unwrap();
