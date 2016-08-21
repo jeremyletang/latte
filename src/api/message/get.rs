@@ -6,7 +6,7 @@
 // except according to those terms.
 
 use api::context::Context;
-// use api::time_utils;
+use api::time_utils;
 use api::message::common::ResponseMessage;
 use backit::{responses, json, time};
 use db::models::{Message, Weekday};
@@ -30,9 +30,11 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
             if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
                 return responses::bad_request("cannot get a message owned by another user");
             }
-            // m = time_utils::utc_message_to_local_message(m);
             match weekday_repo::get(db, &*m.weekdays_id) {
-                Ok(w) => responses::ok(serde_json::to_string(&ResponseMessage::from((m, w))).unwrap()),
+                Ok(w) => {
+                    let (m, w) = time_utils::utc_message_to_local_message(m, w);
+                    responses::ok(serde_json::to_string(&ResponseMessage::from((m, w))).unwrap())
+                },
                 Err(e) => responses::not_found(format!("id do not exist in database {}", e.description()))
             }
 

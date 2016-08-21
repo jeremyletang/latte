@@ -7,7 +7,7 @@
 
 use api::context::Context;
 use api::message::common::{ResponseMessage, Weekdays, validate};
-// use api::time_utils;
+use api::time_utils;
 use backit::{responses, json, time};
 use db::models::{Message, Weekday};
 use db::repositories::message as message_repo;
@@ -69,7 +69,7 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
     // update user_id field
     m.user_id = Some(ctx.user.slack_user_id.clone());
 
-    // m = time_utils::local_message_to_utc_message(m);
+    let (m, w) = time_utils::local_message_to_utc_message(m, w);
 
     // insert the weekdays + check errors then inser the message
     match weekday_repo::create(db, &w) {

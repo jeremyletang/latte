@@ -6,7 +6,7 @@
 // except according to those terms.
 
 use api::context::Context;
-// use api::time_utils;
+use api::time_utils;
 use api::message::common::ResponseMessage;
 use backit::{responses, json, time};
 use db::models::{Message, Weekday};
@@ -27,10 +27,10 @@ pub fn list(ctx: Context, _: &mut Request) -> IronResult<Response> {
             // convert back the message to the timezone of the user
             let lrm: Vec<ResponseMessage> = lm.into_iter().map(|m| {
                 let w = weekday_repo::get(db, &*m.weekdays_id).ok().unwrap();
+                let (m, w) = time_utils::utc_message_to_local_message(m, w);
                 ResponseMessage::from((m, w))
             }).collect();
 
-            // lm = lm.into_iter().map(|m| time_utils::utc_message_to_local_message(m)).collect();
             responses::ok(serde_json::to_string(&lrm).unwrap())
         },
         Err(e) => responses::internal_error(e.description()),

@@ -7,7 +7,7 @@
 
 use api::context::Context;
 use api::message::common::{ResponseMessage, Weekdays, validate};
-// use api::time_utils;
+use api::time_utils;
 use backit::{responses, json, time};
 use db::models::{Message, Weekday};
 use db::repositories::message as message_repo;
@@ -73,7 +73,7 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
     let mut um = try_or_json_error!(json::from_body::<UpdateMessage, _>(&mut req.body));
 
     // get the message
-    let mut m = match message_repo::get(db, &*um.id) {
+    let m = match message_repo::get(db, &*um.id) {
         Ok(old) => {
             if ctx.user.slack_user_id != old.user_id.clone().unwrap() {
                 return responses::bad_request("cannot update a message owned by another user");
@@ -85,7 +85,10 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
     };
 
     // the get the associated weekdays
-    let mut w = weekday_repo::get(db, &*m.weekdays_id).ok().unwrap();
+    let w = weekday_repo::get(db, &*m.weekdays_id).ok().unwrap();
+
+    // convert them to the time of the user
+    let (mut m, mut w) = time_utils::utc_message_to_local_message(m, w);
 
     // validate and update the update time for each struct
     match validate(&m) {
@@ -99,6 +102,9 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
     // apply change to the models
     um.apply(&mut m, &mut w);
+
+    // convert back to utc
+    let (m, w) = time_utils::local_message_to_utc_message(m, w);
 
     // save changes,
     // first the weekdays
