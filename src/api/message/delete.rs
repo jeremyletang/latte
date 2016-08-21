@@ -30,8 +30,17 @@ pub fn delete(ctx: Context, req: &mut Request) -> IronResult<Response> {
             if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
                 return responses::bad_request("cannot delete a message owned by another user");
             }
+            let w_id = m.weekdays_id.clone();
             match message_repo::delete(db, &*delete_id) {
-                Ok(_) => responses::ok(serde_json::to_string(&m).unwrap()),
+                Ok(_) => {
+                    match weekday_repo::get(db, &*w_id) {
+                        Ok(w) => {
+                            let _ = weekday_repo::delete(db, &*w_id);
+                            responses::ok(serde_json::to_string(&ResponseMessage::from((m, w))).unwrap())
+                        },
+                        Err(e) => responses::internal_error(e.description()),
+                    }
+                },
                 Err(e) => responses::internal_error(e.description()),
             }
         },

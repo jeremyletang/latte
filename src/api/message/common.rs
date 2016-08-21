@@ -34,7 +34,7 @@ pub struct Weekdays {
     pub sunday: Option<bool>,
 }
 
-fn to_bool(b: Option<bool>) -> bool {
+pub fn to_bool(b: Option<bool>) -> bool {
     match b {
         Some(true) => true,
         Some(false) => false,
