@@ -7,7 +7,7 @@
 
 use db::models::Message;
 use std::collections::HashMap;
-use std::convert::Into;
+use std::convert::{From, Into};
 use notifier::error::Error;
 
 const HOUR_MIN: usize = 0;
@@ -24,14 +24,15 @@ pub struct SmallMessage {
     pub channel: String,
 }
 
-impl SmallMessage {
-    pub fn from_message_and_token<S>(msg: &Message, token: S)
-        -> SmallMessage where S: Into<String> {
+impl<S> From<(Message, S)> for SmallMessage
+    where S: Into<String> {
+    fn from((msg, token): (Message, S))
+        -> SmallMessage  {
         SmallMessage {
-            body: msg.body.clone(),
-            slack_user_id: msg.user_id.clone().unwrap(),
+            body: msg.body,
+            slack_user_id: msg.user_id,
             slack_token_id: token.into(),
-            channel: msg.channel.clone(),
+            channel: msg.channel,
         }
     }
 }

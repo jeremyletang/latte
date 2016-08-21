@@ -27,7 +27,7 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
     // check if the request is executed with succes
     match message_repo::get(db, &*id) {
         Ok(mut m) => {
-            if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
+            if ctx.user.slack_user_id != m.user_id.clone() {
                 return responses::bad_request("cannot get a message owned by another user");
             }
             match weekday_repo::get(db, &*m.weekdays_id) {

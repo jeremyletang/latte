@@ -42,7 +42,7 @@ pub struct Message {
     pub created_at: Option<i32>,
     pub updated_at: Option<i32>,
 
-    pub user_id: Option<String>,
+    pub user_id: String,
     pub body: String,
     pub channel: String,
 

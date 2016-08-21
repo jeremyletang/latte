@@ -3,7 +3,7 @@ CREATE TABLE messages (
   created_at INTEGER DEFAULT CURRENT_TIMESTAMP,
   updated_at INTEGER DEFAULT CURRENT_TIMESTAMP,
 
-  user_id TEXT,
+  user_id TEXT NOT NULL,
   body TEXT NOT NULL,
   channel TEXT NOT NULL,
 

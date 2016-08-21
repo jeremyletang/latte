@@ -27,7 +27,7 @@ pub fn delete(ctx: Context, req: &mut Request) -> IronResult<Response> {
     // check if the user exist, delete it
     match message_repo::get(db, &*delete_id) {
         Ok(m) => {
-            if ctx.user.slack_user_id != m.user_id.clone().unwrap() {
+            if ctx.user.slack_user_id != m.user_id.clone() {
                 return responses::bad_request("cannot delete a message owned by another user");
             }
             let w_id = m.weekdays_id.clone();

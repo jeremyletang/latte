@@ -75,7 +75,7 @@ pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
     // get the message
     let m = match message_repo::get(db, &*um.id) {
         Ok(old) => {
-            if ctx.user.slack_user_id != old.user_id.clone().unwrap() {
+            if ctx.user.slack_user_id != old.user_id.clone() {
                 return responses::bad_request("cannot update a message owned by another user");
             } else {
                 old

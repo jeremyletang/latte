@@ -39,7 +39,7 @@ impl Into<(Message, Weekday)> for CreateMessage {
             id: Some(Uuid::new_v4().to_string()),
             created_at: Some(now),
             updated_at: Some(now),
-            user_id: None,
+            user_id: Default::default(),
             body: self.body,
             channel: self.channel,
             seconds: self.seconds,
@@ -67,7 +67,7 @@ pub fn create(ctx: Context, req: &mut Request) -> IronResult<Response> {
     }
 
     // update user_id field
-    m.user_id = Some(ctx.user.slack_user_id.clone());
+    m.user_id = ctx.user.slack_user_id.clone();
 
     let (m, w) = time_utils::local_message_to_utc_message(m, w);
 
