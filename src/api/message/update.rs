@@ -33,7 +33,7 @@ pub struct UpdateMessage {
 
 impl UpdateMessage {
     pub fn apply(self, m: &mut Message, w: &mut Weekday) {
-        if self.id != m.id.clone().unwrap() {
+        if self.id != m.id.clone() {
             return
         }
         if let Some(body) = self.body {

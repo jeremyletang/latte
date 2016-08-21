@@ -80,7 +80,7 @@ pub struct ResponseMessage {
 impl From<(::db::models::Message, ::db::models::Weekday)> for ResponseMessage {
     fn from(t: (::db::models::Message, ::db::models::Weekday)) -> ResponseMessage {
         ResponseMessage {
-            id: t.0.id.unwrap(),
+            id: t.0.id,
             created_at: t.0.created_at,
             updated_at: t.0.updated_at,
             body: t.0.body,

@@ -33,7 +33,7 @@ fn make_slack_info(db: &mut SqliteConnection, token: &str) -> Result<User, JsonE
                 // lets check if we have the associated user already in database.
                 Ok(at) => {
                     let mut u = User::from_slack_ids(&*at.user_id, token);
-                    match user_repo::get(db, &*at.user_id) {
+                    match user_repo::get_from_slack_user_id(db, &*at.user_id) {
                         // we already know this user, just update the token
                         // then return
                         Ok(_) => {

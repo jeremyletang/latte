@@ -13,7 +13,7 @@ use std::convert::Into;
 #[insertable_into(users)]
 #[changeset_for(users)]
 pub struct User {
-    pub id: Option<String>,
+    pub id: String,
     pub created_at: Option<i32>,
     pub updated_at: Option<i32>,
 
@@ -25,7 +25,7 @@ impl User {
     pub fn from_slack_ids<S1, S2>(user_id: S1, token_id: S2) -> User
         where S1: Into<String>, S2: Into<String> {
         User {
-            id: None,
+            id: Default::default(),
             created_at: None,
             updated_at: None,
             slack_user_id: user_id.into(),
@@ -38,7 +38,7 @@ impl User {
 #[insertable_into(messages)]
 #[changeset_for(messages)]
 pub struct Message {
-    pub id: Option<String>,
+    pub id: String,
     pub created_at: Option<i32>,
     pub updated_at: Option<i32>,
 

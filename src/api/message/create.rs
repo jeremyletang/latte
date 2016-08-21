@@ -35,7 +35,7 @@ impl Into<(Message, Weekday)> for CreateMessage {
         let weekdays: Weekday = self.weekdays.into();
         let now = time::timestamp::now() as i32;
         let message = Message {
-            id: Some(Uuid::new_v4().to_string()),
+            id: Uuid::new_v4().to_string(),
             created_at: Some(now),
             updated_at: Some(now),
             user_id: Default::default(),
