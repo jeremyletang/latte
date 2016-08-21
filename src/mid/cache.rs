@@ -5,12 +5,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use backit::json::Error as JsonError;
-use db::models::User;
-use db::repositories::user as user_repo;
-use diesel::sqlite::SqliteConnection;
 use iron::{BeforeMiddleware, Request, IronResult, typemap};
-use iron::error::IronError;
 use notifier::Cache;
 use std::sync::{Arc, Mutex};
 

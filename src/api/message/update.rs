@@ -13,11 +13,9 @@ use db::models::{Message, Weekday};
 use db::repositories::message as message_repo;
 use db::repositories::weekday as weekday_repo;
 use iron::{Request, Response, IronResult};
-use router::Router;
 use serde_json;
-use std::convert::{From, Into};
+use std::convert::From;
 use std::error::Error;
-use uuid::Uuid;
 
 #[derive(Display, Debug, Eq, PartialEq, Default, Clone, Serialize, Deserialize)]
 pub struct UpdateMessage {
@@ -65,12 +63,13 @@ impl UpdateMessage {
     }
 }
 
+
 // put /api/v1/message
 pub fn update(ctx: Context, req: &mut Request) -> IronResult<Response> {
     let db = &mut *ctx.db.get().expect("cannot get sqlite connection from the context");
 
     // one match only
-    let mut um = try_or_json_error!(json::from_body::<UpdateMessage, _>(&mut req.body));
+    let um = try_or_json_error!(json::from_body::<UpdateMessage, _>(&mut req.body));
 
     // get the message
     let m = match message_repo::get(db, &*um.id) {

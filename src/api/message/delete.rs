@@ -8,15 +8,13 @@
 use api::context::Context;
 // use api::time_utils;
 use api::message::common::ResponseMessage;
-use backit::{responses, json, time};
-use db::models::{Message, Weekday};
+use backit::responses;
 use db::repositories::message as message_repo;
 use db::repositories::weekday as weekday_repo;
 use iron::{Request, Response, IronResult};
 use router::Router;
 use serde_json;
 use std::error::Error;
-use uuid::Uuid;
 
 // delete /api/v1/message
 pub fn delete(ctx: Context, req: &mut Request) -> IronResult<Response> {

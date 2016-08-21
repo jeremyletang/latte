@@ -10,7 +10,7 @@ use backit::middlewares::extract_connection_from_request;
 use db::models::User;
 use db::repositories::user as user_repo;
 use diesel::sqlite::SqliteConnection;
-use iron::{BeforeMiddleware, Request, IronResult, typemap};
+use iron::{BeforeMiddleware, Request, IronResult};
 use iron::error::IronError;
 use mid::SlackTokenMid;
 use uuid::Uuid;
@@ -26,7 +26,7 @@ fn make_slack_info(db: &mut SqliteConnection, token: &str) -> Result<User, JsonE
         Some(u) => Ok(u),
         // the user do not exist, first validate the token with slack api
         None => {
-            let mut u = User::from_slack_ids(&*Uuid::new_v4().to_string(), token);
+            let u = User::from_slack_ids(&*Uuid::new_v4().to_string(), token);
             user_repo::create(db, u)
         }
     }

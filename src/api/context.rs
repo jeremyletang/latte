@@ -9,7 +9,7 @@ use backit::middlewares::extract_connection_from_request;
 use db::models::User;
 use diesel::sqlite::SqliteConnection;
 use iron::Request;
-use mid::{SlackTokenMid, CacheMid, extract_cache_from_request};
+use mid::{SlackTokenMid, extract_cache_from_request};
 use r2d2;
 use r2d2_diesel::ConnectionManager;
 use std::sync::{Arc, Mutex};

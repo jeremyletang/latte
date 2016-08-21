@@ -154,7 +154,7 @@ impl Cache {
         return self.hours[hour].remove(minute, message_id);
     }
 
-    pub fn flush_and_update_with(&mut self, mut oth: Cache) {
+    pub fn flush_and_update_with(&mut self, oth: Cache) {
         self.hours = oth.hours;
     }
 }

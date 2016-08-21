@@ -13,7 +13,6 @@ use db::models::{Message, Weekday};
 use db::repositories::message as message_repo;
 use db::repositories::weekday as weekday_repo;
 use iron::{Request, Response, IronResult};
-use router::Router;
 use serde_json;
 use std::convert::{From, Into};
 use std::error::Error;

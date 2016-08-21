@@ -8,15 +8,13 @@
 use api::context::Context;
 use api::time_utils;
 use api::message::common::ResponseMessage;
-use backit::{responses, json, time};
-use db::models::{Message, Weekday};
+use backit::responses;
 use db::repositories::message as message_repo;
 use db::repositories::weekday as weekday_repo;
 use iron::{Request, Response, IronResult};
 use router::Router;
 use serde_json;
 use std::error::Error;
-use uuid::Uuid;
 
 // get /api/v1/message/:id
 pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
@@ -26,7 +24,7 @@ pub fn get(ctx: Context, req: &mut Request) -> IronResult<Response> {
 
     // check if the request is executed with succes
     match message_repo::get(db, &*id) {
-        Ok(mut m) => {
+        Ok(m) => {
             if ctx.user.slack_user_id != m.user_id.clone() {
                 return responses::bad_request("cannot get a message owned by another user");
             }
