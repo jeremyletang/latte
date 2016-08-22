@@ -5,6 +5,15 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-pub mod user;
-pub mod message;
-pub mod weekday;
+pub use self::create::create;
+pub use self::get::get;
+pub use self::list::list;
+pub use self::update::update;
+pub use self::delete::delete;
+
+mod common;
+mod create;
+mod get;
+mod list;
+mod update;
+mod delete;

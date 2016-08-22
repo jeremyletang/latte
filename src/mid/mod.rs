@@ -7,6 +7,8 @@
 
 pub use self::cache::{CacheMid, extract_cache_from_request};
 pub use self::slack_token::SlackTokenMid;
+pub use self::fake_slack_token::FakeSlackTokenMid;
 
 pub mod cache;
 pub mod slack_token;
+pub mod fake_slack_token;

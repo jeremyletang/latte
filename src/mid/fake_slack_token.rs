@@ -10,14 +10,12 @@ use backit::middlewares::extract_connection_from_request;
 use db::models::User;
 use db::repositories::user as user_repo;
 use diesel::sqlite::SqliteConnection;
-use iron::{BeforeMiddleware, Request, IronResult, typemap};
+use iron::{BeforeMiddleware, Request, IronResult};
 use iron::error::IronError;
+use mid::SlackTokenMid;
+use uuid::Uuid;
 
-pub struct SlackTokenMid;
-
-impl typemap::Key for SlackTokenMid {
-    type Value = User;
-}
+pub struct FakeSlackTokenMid;
 
 fn make_slack_info(db: &mut SqliteConnection, token: &str) -> Result<User, JsonError> {
     // first check if the token is in database
@@ -28,33 +26,13 @@ fn make_slack_info(db: &mut SqliteConnection, token: &str) -> Result<User, JsonE
         Some(u) => Ok(u),
         // the user do not exist, first validate the token with slack api
         None => {
-            match ::slack::auth::call(token) {
-                // the new token is valid.
-                // lets check if we have the associated user already in database.
-                Ok(at) => {
-                    let mut u = User::from_slack_ids(&*at.user_id, token);
-                    match user_repo::get_from_slack_user_id(db, &*at.user_id) {
-                        // we already know this user, just update the token
-                        // then return
-                        Ok(_) => {
-                            u.token_id = token.to_string();
-                            user_repo::update(db, u)
-                        },
-                        // no user with this id, create it then return it
-                        Err(_) => user_repo::create(db, u)
-                    }
-                },
-                // here we cannot do anything else ...
-                // just return an error,
-                // the token may not be valid anymore,
-                // the front will need to recreate it.
-                Err(e) => Err(e)
-            }
+            let u = User::from_slack_ids(&*Uuid::new_v4().to_string(), token);
+            user_repo::create(db, u)
         }
     }
 }
 
-impl BeforeMiddleware for SlackTokenMid {
+impl BeforeMiddleware for FakeSlackTokenMid {
     fn before(&self, req: &mut Request) -> IronResult<()> {
         // first extract the db
         let conn_wrapper = extract_connection_from_request(req);

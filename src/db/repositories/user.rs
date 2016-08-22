@@ -17,7 +17,7 @@ pub fn create(db: &mut SqliteConnection, mut u: User) -> Result<User, json::Erro
     use db::schemas::users;
 
     // create some mandatory fields
-    u.id = Some(Uuid::new_v4().to_string());
+    u.id = Uuid::new_v4().to_string();
     u.created_at = Some(time::timestamp::now() as i32);
     u.updated_at = Some(time::timestamp::now() as i32);
 
@@ -60,4 +60,11 @@ pub fn get_from_token(db: &mut SqliteConnection, token: &str) -> Option<User> {
         Ok(u) => Some(u),
         Err(_) => None,
     }
+}
+
+pub fn get_from_slack_user_id(db: &mut SqliteConnection, get_id: &str) -> Result<User, DieselError> {
+    use diesel::{LoadDsl, FilterDsl, ExpressionMethods};
+    use db::schemas::users::dsl::{users, slack_user_id};
+    // search user with the provided id.
+    users.filter(slack_user_id.eq(get_id)).first::<User>(db)
 }

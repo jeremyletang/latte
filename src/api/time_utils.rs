@@ -5,7 +5,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use db::models::Message;
+use db::models::{Message, Weekday};
 
 const DAY_SECONDS: i32 = 86400;
 
@@ -83,62 +83,62 @@ fn timezone_seconds(mut seconds: i32, offset: i32) -> (i32, i8) {
     return (seconds, day_change);
 }
 
-fn increase_day_in_message(m: &mut Message) {
-    let m_copy = m.clone();
-    fn apply(a: &mut Option<i32>, b: &mut Option<i32>) {
-        *a = Some(0);
-        *b = Some(1);
+fn increase_day_in_message(w: &mut Weekday) {
+    let w_copy = w.clone();
+    fn apply(a: &mut bool, b: &mut bool) {
+        *a = false;
+        *b = true;
     }
-    if m_copy.monday == Some(1) { apply(&mut m.monday, &mut m.tuesday); }
-    if m_copy.tuesday == Some(1) { apply(&mut m.tuesday, &mut m.wednesday); }
-    if m_copy.wednesday == Some(1) { apply(&mut m.wednesday, &mut m.thursday); }
-    if m_copy.thursday == Some(1) { apply(&mut m.thursday, &mut m.friday); }
-    if m_copy.friday == Some(1) { apply(&mut m.friday, &mut m.saturday); }
-    if m_copy.saturday == Some(1) { apply(&mut m.saturday, &mut m.sunday); }
-    if m_copy.sunday == Some(1) { apply(&mut m.sunday, &mut m.monday); }
+    if w_copy.monday { apply(&mut w.monday, &mut w.tuesday); }
+    if w_copy.tuesday { apply(&mut w.tuesday, &mut w.wednesday); }
+    if w_copy.wednesday { apply(&mut w.wednesday, &mut w.thursday); }
+    if w_copy.thursday { apply(&mut w.thursday, &mut w.friday); }
+    if w_copy.friday { apply(&mut w.friday, &mut w.saturday); }
+    if w_copy.saturday { apply(&mut w.saturday, &mut w.sunday); }
+    if w_copy.sunday { apply(&mut w.sunday, &mut w.monday); }
 }
 
-fn decrease_day_in_message(m: &mut Message) {
-    let m_copy = m.clone();
-    fn apply(a: &mut Option<i32>, b: &mut Option<i32>) {
-        *a = Some(0);
-        *b = Some(1);
+fn decrease_day_in_message(w: &mut Weekday) {
+    let w_copy = w.clone();
+    fn apply(a: &mut bool, b: &mut bool) {
+        *a = false;
+        *b = true;
     }
-    if m_copy.sunday == Some(1) { apply(&mut m.sunday, &mut m.saturday); }
-    if m_copy.saturday == Some(1) { apply(&mut m.saturday, &mut m.friday); }
-    if m_copy.friday == Some(1) { apply(&mut m.friday, &mut m.thursday); }
-    if m_copy.thursday == Some(1) { apply(&mut m.thursday, &mut m.wednesday); }
-    if m_copy.wednesday == Some(1) { apply(&mut m.wednesday, &mut m.tuesday); }
-    if m_copy.tuesday == Some(1) { apply(&mut m.tuesday, &mut m.monday); }
-    if m_copy.monday == Some(1) { apply(&mut m.monday, &mut m.sunday); }
+    if w_copy.sunday { apply(&mut w.sunday, &mut w.saturday); }
+    if w_copy.saturday { apply(&mut w.saturday, &mut w.friday); }
+    if w_copy.friday { apply(&mut w.friday, &mut w.thursday); }
+    if w_copy.thursday { apply(&mut w.thursday, &mut w.wednesday); }
+    if w_copy.wednesday { apply(&mut w.wednesday, &mut w.tuesday); }
+    if w_copy.tuesday { apply(&mut w.tuesday, &mut w.monday); }
+    if w_copy.monday { apply(&mut w.monday, &mut w.sunday); }
 }
 
 // convert a message with seconds and weekdays in the client timezone
 // to utc values
-pub fn local_message_to_utc_message(mut m: Message) -> Message {
+pub fn local_message_to_utc_message(mut m: Message, mut w: Weekday) -> (Message, Weekday) {
     let (new_seconds, day_change) = utc_seconds(m.seconds, m.utc_offset);
     m.seconds = new_seconds;
     // check if we need to update the days to apply the reminder
     // dependening of the utc time
     if day_change == -1 {
-        decrease_day_in_message(&mut m);
+        decrease_day_in_message(&mut w);
     } else if day_change == 1 {
-        increase_day_in_message(&mut m);
+        increase_day_in_message(&mut w);
     }
-    return m;
+    return (m, w);
 }
 
 // convert a message with seconds and weekdays in utc based
 // to client timezone back
-pub fn utc_message_to_local_message(mut m: Message) -> Message {
+pub fn utc_message_to_local_message(mut m: Message, mut w: Weekday) -> (Message, Weekday) {
     let (new_seconds, day_change) = timezone_seconds(m.seconds, m.utc_offset);
     m.seconds = new_seconds;
     // check if we need to update the days to apply the reminder
     // dependening of the utc time
     if day_change == -1 {
-        decrease_day_in_message(&mut m);
+        decrease_day_in_message(&mut w);
     } else if day_change == 1 {
-        increase_day_in_message(&mut m);
+        increase_day_in_message(&mut w);
     }
-    return m;
+    return (m, w);
 }
