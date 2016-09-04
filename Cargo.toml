@@ -14,13 +14,15 @@ hyper = "0.9.10"
 iron = "0.4.0"
 log = "0.3.6"
 router = "0.2.0"
-serde = "0.8.0"
-serde_json = "0.8.0"
-serde_macros = "0.8.1"
+serde = "^0.8"
+serde_json = "^0.8"
+serde_macros = "^0.8"
 time = "0.1.35"
 unicase = "1.4.0"
-diesel = { version = "0.7.1", default-features = false, features = ["sqlite"] }
-diesel_codegen = { version = "0.7.1", default-features = false, features = ["sqlite"] }
+#diesel = { version = "^0.7", default-features = false, features = ["sqlite"] }
+#diesel_codegen = { version = "^0.7", default-features = false, features = ["sqlite"] }
+diesel = { git = "https://github.com/jeremyletang/diesel", default-features = false, features = ["sqlite"] }
+diesel_codegen = { git = "https://github.com/jeremyletang/diesel", default-features = false, features = ["sqlite"] }
 r2d2 = "0.7.0"
-r2d2-diesel = "0.7.1"
+r2d2-diesel = { git = "https://github.com/jeremyletang/r2d2-diesel" }
 uuid = { version = "0.2", features = ["v4"] }
